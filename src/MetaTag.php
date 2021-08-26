@@ -384,17 +384,18 @@ class MetaTag
         foreach ($this->og as $tag) {
             // Get value for tag, default to dynamically set value
             $value = Arr::get($this->config['open_graph'], $tag, $this->get($tag));
-            if ($tag == 'gallery' || is_array($value)) {
-                foreach ($value as $glKey => $image) {
-                    foreach ($image as $key => $val) {
-                        $html["$tag.$glKey.$key"] = $this->createTag([
-                            'property' => "og:{$key}",
-                            'content' => $val
-                        ]);
+            if (!empty($value)) {
+                if ($tag == 'gallery' || is_array($value)) {
+                    foreach ($value as $glKey => $image) {
+                        foreach ($image as $key => $val) {
+                            $html["$tag.$glKey.$key"] = $this->createTag([
+                                'property' => "og:{$key}",
+                                'content' => $val
+                            ]);
+                        }
                     }
-                }
-            } else {
-                if ($value) {
+                } else {
+
                     $html[$tag] = $this->createTag([
                         'property' => "og:{$tag}",
                         'content' => $value
@@ -482,7 +483,7 @@ class MetaTag
     {
         $html = '';
         foreach ($this->metas as $key => $val) {
-            if (!in_array($key, ['images', 'gallery', 'canonical'])) {
+            if (!in_array($key, ['images', 'gallery', 'canonical', 'type'])) {
                 if (!Str::contains($key, ':'))
                     $html .= $this->createTag([
                         'name' => $key,
