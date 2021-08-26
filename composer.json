@@ -1,5 +1,8 @@
 {
   "name": "zanysoft/laravel-meta-tags",
+  "description": "A package to manage Header Meta Tags",
+  "license": "MIT",
+  "homepage": "http://www.zanysoft.co",
   "keywords": [
     "meta tags",
     "meta",
@@ -7,23 +10,20 @@
     "head",
     "laravel"
   ],
-  "description": "A package to manage Header Meta Tags",
-  "license": "MIT",
   "authors": [
     {
-      "name": "Mubashar",
-      "email": "info@zanysoft.net"
+      "name": "Zany Soft",
+      "email": "info@zanysoft.co",
+      "homepage": "http://www.zanysoft.co"
     }
   ],
   "require": {
-    "php": ">=5.5.9",
+    "php": "^7.1 || ^8",
     "illuminate/support": "~5.1|^6.0|~7.0"
-  },
-  "require-dev": {
   },
   "autoload": {
     "psr-4": {
-      "ZanySoft\\LaravelMetaTags\\": "src/ZanySoft/LaravelMetaTags/"
+      "ZanySoft\\LaravelMetaTags\\": "src/"
     }
   },
   "extra": {
