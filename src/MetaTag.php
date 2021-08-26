@@ -288,7 +288,7 @@ class MetaTag
             'content' => $content,
         ], $tag);
 
-        return $res;
+        return trim($res, "\n");
     }
 
     /**
@@ -417,7 +417,7 @@ class MetaTag
     {
         $html = '';
         foreach ($this->metas as $key => $val) {
-            if (!in_array($key, ['images', 'url'])) {
+            if (!in_array($key, ['images'])) {
                 $html .= $this->createTag([
                     'name' => $key,
                     'content' => $val,
@@ -426,7 +426,7 @@ class MetaTag
         }
 
         foreach ($this->links as $key => $val) {
-            if ($key !== 'images') {
+            if (!in_array($key, ['images', 'canonical'])) {
                 $html .= $this->createTag([
                     'name' => $key,
                     'content' => $val,
@@ -435,10 +435,12 @@ class MetaTag
         }
 
         $html .= $this->canonical();
+        $html .= "\n\t";
         $html .= $this->twitterCard();
+        $html .= "\n\t";
         $html .= $this->openGraph();
 
-        return $html;
+        return trim($html, "\n");
     }
 
     /**
@@ -456,7 +458,7 @@ class MetaTag
 
         $attributes = implode(' ', $attributes);
 
-        return "<{$tag} {$attributes}>\n    ";
+        return "\n\t<{$tag} {$attributes}>";
     }
 
     /**
