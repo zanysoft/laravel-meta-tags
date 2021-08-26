@@ -63,6 +63,12 @@ Various settings for these options can be found in the `config/meta-tags.php` fi
 {!! MetaTag::openGraph() !!}
 ```
 
+**For All**
+
+```php
+{!! MetaTag::renderAll() !!}
+```
+
 
 ## Examples
 
@@ -73,15 +79,13 @@ Various settings for these options can be found in the `config/meta-tags.php` fi
 
 namespace App\Http\Controllers;
 
-use Illuminate\Foundation\Bus\DispatchesCommands;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-
 use MetaTag;
 
 abstract class Controller extends BaseController 
 {
-    use DispatchesCommands, ValidatesRequests;
+    use ValidatesRequests;
 
     public function __construct()
     {
@@ -150,6 +154,8 @@ class HomeController extends Controller
         {!! MetaTag::tag('description') !!}
         {!! MetaTag::tag('image') !!}
         
+        {!! MetaTag::canonical() !!}
+
         {!! MetaTag::openGraph() !!}
         
         {!! MetaTag::twitterCard() !!}
