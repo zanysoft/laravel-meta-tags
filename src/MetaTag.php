@@ -376,19 +376,26 @@ class MetaTag
             }
         }
 
+        $image = $this->get('image');
+        $image_src = $this->get('image:src');
+
+        if (!$image_src && $image) {
+            $image_src = $image;
+        }
+
         // Set image
-        if (empty($html['image']) && $this->get('image')) {
+        if (empty($html['image']) && $image) {
             $html['image'] = $this->createTag([
                 'name' => "twitter:image",
-                'content' => $this->get('image')
+                'content' => $image
             ]);
         }
 
         // Set image
-        if (empty($html['image:src']) && $this->get('image:src')) {
+        if (empty($html['image:src']) && $image_src) {
             $html['image:src'] = $this->createTag([
                 'property' => "twitter:image:src",
-                'content' => $this->get('image:src')
+                'content' => $image_src
             ]);
         }
 
