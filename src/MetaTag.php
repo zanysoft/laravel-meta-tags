@@ -76,6 +76,7 @@ class MetaTag
         'video:type',
         'video:width',
         'video:height',
+        'gallery',
     ];
 
     /**
@@ -102,26 +103,26 @@ class MetaTag
     {
         $this->request = $request;
         $this->config = $config;
+        $this->defaultLocale = $defaultLocale;
+
+        // Is locales a callback
+        if (is_callable($this->config['locales'])) {
+            $this->setLocales(call_user_func($this->config['locales']));
+        } else {
+            $this->setLocales($this->config['locales']);
+        }
 
         $this->validate = ($this->config['validate'] ?? false);
 
         // Set defaults
         $this->set('title', $this->config['title']);
         $this->set('url', $this->request->url());
-
-        // Set default locale
-        $this->defaultLocale = $defaultLocale;
-
-        // Is locales a callback
-        if (is_callable($this->config['locales'])) {
-            $this->setLocales(call_user_func($this->config['locales']));
-        }
     }
 
     /**
-     * @param string $key
-     * @param string $default
-     * @return string
+     * @param $key
+     * @param null $default
+     * @return array|\ArrayAccess|mixed
      */
     public function get($key, $default = null)
     {
@@ -154,9 +155,31 @@ class MetaTag
      *
      * @param array $locals
      */
+    public function setLocale($local = '')
+    {
+        if (Str::contains($local, '_')) {
+            list($local) = explode('_', $local);
+        }
+
+        if ($local && !in_array($local, $this->config['locales'])) {
+            $this->config['locales'][] = $local;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set app support locales.
+     *
+     * @param array $locals
+     */
     public function setLocales(array $locals = [])
     {
-        $this->config['locales'] = $locals;
+        $this->config['locales'] = [];
+
+        foreach ($locals as $local) {
+            $this->setLocale($local);
+        }
 
         return $this;
     }
@@ -229,10 +252,24 @@ class MetaTag
         }
 
         if ($imageFile) {
-            $this->metas['image'] = $imageFile;
-            if ($attributes) {
-                $valid = ['secure_url', 'alt', 'url', 'src', 'type', 'width', 'height'];
-                $this->attributes('image', $attributes, $valid);
+            $valid = ['secure_url', 'alt', 'url', 'src', 'type', 'width', 'height'];
+            $key = 'image';
+            if (isset($this->metas['image']) && $this->metas['image']) {
+                $image[$key] = $imageFile;
+                if ($attributes) {
+                    foreach ($attributes as $name => $value) {
+                        if ($this->validate && !in_array($name, $valid)) {
+                            throw new Exception("MetaTags: Invalid attribute '{$name}' (unknown type)");
+                        }
+                        $image[$key . ':' . $name] = $this->convertDate($value);
+                    }
+                }
+                $this->metas['gallery'][] = $image;
+            } else {
+                $this->metas[$key] = $imageFile;
+                if ($attributes) {
+                    $this->attributes($key, $attributes, $valid);
+                }
             }
         }
 
@@ -280,6 +317,10 @@ class MetaTag
         } else {
             $content = $value ? $value : (isset($this->metas[$key]) ? $this->metas[$key] : '');
             $tag = 'meta';
+        }
+
+        if (!$content) {
+            return '';
         }
 
         $res = $this->createTag([
@@ -343,16 +384,40 @@ class MetaTag
         foreach ($this->og as $tag) {
             // Get value for tag, default to dynamically set value
             $value = Arr::get($this->config['open_graph'], $tag, $this->get($tag));
-
-            if ($value) {
-                $html[$tag] = $this->createTag([
-                    'property' => "og:{$tag}",
-                    'content' => $value
-                ]);
+            if ($tag == 'gallery' || is_array($value)) {
+                foreach ($value as $glKey => $image) {
+                    foreach ($image as $key => $val) {
+                        $html["$tag.$glKey.$key"] = $this->createTag([
+                            'property' => "og:{$key}",
+                            'content' => $val
+                        ]);
+                    }
+                }
+            } else {
+                if ($value) {
+                    $html[$tag] = $this->createTag([
+                        'property' => "og:{$tag}",
+                        'content' => $value
+                    ]);
+                }
             }
         }
 
-        return implode('', $html);
+        $html = implode('', $html);
+
+        /* $gallery = $this->get('gallery');
+         if (is_array($gallery) && !empty($gallery)) {
+             foreach ($gallery as $image) {
+                 foreach ($image as $key => $val) {
+                     $html .= $this->createTag([
+                         'property' => "og:{$key}",
+                         'content' => $val
+                     ]);
+                 }
+             }
+         }*/
+
+        return $html;
     }
 
     /**
@@ -417,14 +482,16 @@ class MetaTag
     {
         $html = '';
         foreach ($this->metas as $key => $val) {
-            if (!in_array($key, ['images'])) {
-                $html .= $this->createTag([
-                    'name' => $key,
-                    'content' => $val,
-                ]);
+            if (!in_array($key, ['images', 'gallery', 'canonical'])) {
+                if (!Str::contains($key, ':'))
+                    $html .= $this->createTag([
+                        'name' => $key,
+                        'content' => $val,
+                    ]);
             }
         }
 
+        $html .= "\n\t";
         foreach ($this->links as $key => $val) {
             if (!in_array($key, ['images', 'canonical'])) {
                 $html .= $this->createTag([
