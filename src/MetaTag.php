@@ -681,7 +681,7 @@ class MetaTag
     public function forget(string $name): self
     {
         foreach ($this->metas as $key => $tag) {
-            if ($tag->name == $name) {
+            if ($key == $name) {
                 unset($this->metas[$key]);
             }
         }
@@ -710,8 +710,8 @@ class MetaTag
      */
     public function has(string $name): bool
     {
-        foreach ($this->metas as $tag) {
-            if ($tag->name == $name) {
+        foreach ($this->metas as $key => $tag) {
+            if ($key == $name) {
                 return true;
             }
         }
@@ -788,8 +788,8 @@ class MetaTag
     {
         $lastTag = null;
 
-        foreach ($this->metas as $tag) {
-            if ($tag->name == $name) {
+        foreach ($this->metas as $key => $tag) {
+            if ($key == $name) {
                 $lastTag = $tag;
             }
         }
