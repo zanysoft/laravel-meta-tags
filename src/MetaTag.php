@@ -188,7 +188,7 @@ class MetaTag
      * @param string $value
      * @return string
      */
-    public function setTitle($value, $attributes = null)
+    public function setTitle($value, $attributes = [])
     {
         $title = $this->title;
 
@@ -237,7 +237,7 @@ class MetaTag
      * @return $this
      * @throws \Exception
      */
-    public function setImage(string $imageFile, array $attributes = null): self
+    public function setImage(string $imageFile, array $attributes = []): self
     {
         if ($this->validate and !$imageFile) {
             throw new Exception("Open Graph: Invalid image URL (empty)");
@@ -256,7 +256,7 @@ class MetaTag
             $key = 'image';
             if (isset($this->metas['image']) && $this->metas['image']) {
                 $image[$key] = $imageFile;
-                if ($attributes) {
+                if (!empty($attributes)) {
                     foreach ($attributes as $name => $value) {
                         if ($this->validate && !in_array($name, $valid)) {
                             throw new Exception("MetaTags: Invalid attribute '{$name}' (unknown type)");
@@ -267,7 +267,7 @@ class MetaTag
                 $this->metas['gallery'][] = $image;
             } else {
                 $this->metas[$key] = $imageFile;
-                if ($attributes) {
+                if (!empty($attributes)) {
                     $this->attributes($key, $attributes, $valid);
                 }
             }
