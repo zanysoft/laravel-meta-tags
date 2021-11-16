@@ -2,7 +2,7 @@
   "name": "zanysoft/laravel-meta-tags",
   "description": "A package to manage Header Meta Tags",
   "license": "MIT",
-  "homepage": "http://www.zanysoft.co",
+  "homepage": "http://www.zanysoft.net",
   "keywords": [
     "meta tags",
     "meta",
@@ -13,8 +13,8 @@
   "authors": [
     {
       "name": "Zany Soft",
-      "email": "info@zanysoft.co",
-      "homepage": "http://www.zanysoft.co"
+      "email": "info@zanysoft.net",
+      "homepage": "http://www.zanysoft.net"
     }
   ],
   "require": {
@@ -36,6 +36,5 @@
       }
     }
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+  "minimum-stability": "stable"
 }

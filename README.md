@@ -47,6 +47,15 @@ $ php artisan vendor:publish --provider="ZanySoft\LaravelMetaTags\MetaTagsServic
 
 A configuration file will be publish to `config/meta-tags.php`.
 
+
+**Trialing slash Configuration**
+
+If you want to add trialing slash to home url then set this to `true` (_if not exist in config file add this_)
+```php
+ 'add_trialing_slash' => false, 
+```
+
+
 ## Twitter Cards and OpenGraph
 
 Various settings for these options can be found in the `config/meta-tags.php` file.

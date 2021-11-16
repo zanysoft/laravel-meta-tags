@@ -48,6 +48,10 @@ class MetaTag
      */
     private $validate = false;
     /**
+     * @var boolean
+     */
+    private $add_trialing_slash = false;
+    /**
      * OpenGraph elements
      *
      * @var array
@@ -114,9 +118,18 @@ class MetaTag
 
         $this->validate = ($this->config['validate'] ?? false);
 
+        $this->add_trialing_slash = ($this->config['add_trialing_slash'] ?? false);
+
+
         // Set defaults
         $this->set('title', $this->config['title']);
-        $this->set('url', $this->request->url());
+
+        if ($this->add_trialing_slash) {
+            $_url = $this->request->url();
+            $this->set('url', rtrim($_url, '/') . '/');
+        } else {
+            $this->set('url', $this->request->url());
+        }
     }
 
     /**
@@ -321,6 +334,12 @@ class MetaTag
 
         if (!$content) {
             return '';
+        }
+
+        if ($this->add_trialing_slash) {
+            if (rtrim($content, '/') == rtrim(url('/'), '/')) {
+                $content = rtrim($content, '/') . '/';
+            }
         }
 
         $res = $this->createTag([
@@ -537,8 +556,15 @@ class MetaTag
     {
         $text = preg_replace('/(*UTF8)<[^>]+>/', ' ', $text, PREG_OFFSET_CAPTURE);
         $text = preg_replace('/(*UTF8)[\r\n\s]+/', ' ', $text, PREG_OFFSET_CAPTURE);
+        $text = trim(str_replace('"', '&quot;', $text));
 
-        return trim(str_replace('"', '&quot;', $text));
+        if ($this->add_trialing_slash) {
+            if (rtrim($text, '/') == rtrim(url('/'), '/')) {
+                $text = rtrim($text, '/') . '/';
+            }
+        }
+
+        return $text;
     }
 
     /**
