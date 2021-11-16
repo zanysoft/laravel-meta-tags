@@ -55,6 +55,11 @@ If you want to add trialing slash to home url then set this to `true` (_if not e
  'add_trialing_slash' => false, 
 ```
 
+If you want to add query strings to canonical url then set this to `true` (_if not exist in config file add this_)
+```php
+ 'canonical_query_string' => false, 
+```
+
 
 ## Twitter Cards and OpenGraph
 

@@ -52,6 +52,10 @@ class MetaTag
      */
     private $add_trialing_slash = false;
     /**
+     * @var boolean
+     */
+    private $canonical_query_string = false;
+    /**
      * OpenGraph elements
      *
      * @var array
@@ -120,15 +124,16 @@ class MetaTag
 
         $this->add_trialing_slash = ($this->config['add_trialing_slash'] ?? false);
 
+        $this->canonical_query_string = ($this->config['canonical_query_string'] ?? false);
+
 
         // Set defaults
         $this->set('title', $this->config['title']);
-
-        if ($this->add_trialing_slash) {
-            $_url = $this->request->url();
+        $_url = $this->request->url();
+        if ($this->add_trialing_slash && rtrim($_url, '/') == rtrim(url('/'))) {
             $this->set('url', rtrim($_url, '/') . '/');
         } else {
-            $this->set('url', $this->request->url());
+            $this->set('url', $_url);
         }
     }
 
@@ -225,6 +230,9 @@ class MetaTag
      */
     public function setCanonical($value)
     {
+        if (Str::contains($value, '?') && !$this->canonical_query_string) {
+            $value = substr($value, 0, strpos($value, '?'));
+        }
         $this->links['canonical'] = $value;
 
         return $this;
@@ -326,6 +334,9 @@ class MetaTag
     {
         if ($key == 'canonical') {
             $content = $value ? $value : (isset($this->links[$key]) ? $this->links[$key] : '');
+            if (Str::contains($content, '?') && !$this->canonical_query_string) {
+                $content = substr($content, 0, strpos($content, '?'));
+            }
             $tag = 'link';
         } else {
             $content = $value ? $value : (isset($this->metas[$key]) ? $this->metas[$key] : '');
@@ -358,7 +369,12 @@ class MetaTag
      */
     public function canonical($url = null)
     {
+
         $url = $url ? $url : (isset($this->links['canonical']) ? $this->links['canonical'] : $this->request->url());
+
+        if (Str::contains($url, '?') && !$this->canonical_query_string) {
+            $url = substr($url, 0, strpos($url, '?'));
+        }
 
         $html = $this->createTag([
             'rel' => 'canonical',
