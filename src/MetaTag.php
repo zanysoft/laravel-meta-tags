@@ -517,6 +517,19 @@ class MetaTag
     public function renderAll()
     {
         $html = '';
+
+        $all = $this->toArray();
+        foreach ($all as $tag => $attributes) {
+            foreach ($attributes as $attribute) {
+                if ($tag == 'og') {
+                    $tag = 'meta';
+                }
+                $html .= $this->createTag($attribute, $tag);
+            }
+        }
+
+        return $html;
+        /*$html = '';
         foreach ($this->metas as $key => $val) {
             if (!in_array($key, ['images', 'gallery', 'canonical', 'type'])) {
                 if (!Str::contains($key, ':'))
@@ -543,7 +556,145 @@ class MetaTag
         $html .= "\n\t";
         $html .= $this->openGraph();
 
-        return trim($html, "\n");
+        return trim($html, "\n");*/
+    }
+
+    /**
+     * @return string
+     */
+    public function toArray($group = null)
+    {
+        $output = [];
+
+        if (!$group || $group == 'all') {
+            foreach ($this->metas as $key => $val) {
+                if (!in_array($key, ['images', 'gallery', 'canonical', 'type'])) {
+                    if (!Str::contains($key, ':'))
+                        $output['meta'][$key] = [
+                            'name' => $key,
+                            'content' => $val,
+                        ];
+                }
+            }
+
+            foreach ($this->links as $key => $val) {
+                if (!in_array($key, ['images', 'canonical'])) {
+                    $output['link'][$key] = [
+                        'name' => $key,
+                        'content' => $val,
+                    ];
+                }
+            }
+        }
+
+        if (!$group || in_array($group, ['canonical', 'all'])) {
+            // Canonicals
+            $con_url = (isset($this->links['canonical']) ? $this->links['canonical'] : $this->request->url());
+
+            if (Str::contains($con_url, '?') && !$this->canonical_query_string) {
+                $con_url = substr($con_url, 0, strpos($con_url, '?'));
+            }
+
+            $output['link']['canonical'] = [
+                'rel' => 'canonical',
+                'href' => $con_url
+            ];
+
+            if (!in_array($this->defaultLocale, $this->config['locales'])) {
+                $this->config['locales'][] = $this->defaultLocale;
+            }
+
+            if (count($this->config['locales']) > 1) {
+                foreach ($this->config['locales'] as $value) {
+                    // Turn current URL into a localized URL
+                    // using the given lang code
+                    $localized_url = $this->localizedURL($value, $con_url);
+
+                    $output['link']['canonical:' . strtolower($value)] = [
+                        'rel' => 'alternate',
+                        'href' => $localized_url,
+                        'hreflang' => $value == $this->defaultLocale ? 'x-default' : $value,
+                    ];
+                }
+            }
+        }
+
+
+        if (!$group || in_array($group, ['twitter', 'all'])) {
+            // twitterCard
+            foreach ($this->twitter as $tag) {
+                // Get value for tag, default to dynamically set value
+                $value = Arr::get($this->config['twitter'], $tag, $this->get($tag));
+                if ($value && !isset($html[$tag])) {
+                    $output['twitter'][$tag] = [
+                        'property' => "twitter:{$tag}",
+                        'content' => $value,
+                    ];
+                }
+            }
+
+            $tw_image = $this->get('image');
+            $tw_image_src = $this->get('image:src');
+
+            if (!$tw_image_src && $tw_image) {
+                $tw_image_src = $tw_image;
+            }
+
+            // Set image
+            if (empty($output['twitter']['image']) && $tw_image) {
+                $output['twitter']['image'] = [
+                    'name' => "twitter:image",
+                    'content' => $tw_image
+                ];
+            }
+
+            // Set image
+            if (empty($output['twitter']['image:src']) && $tw_image_src) {
+                $output['twitter']['image:src'] = [
+                    'property' => "twitter:image:src",
+                    'content' => $tw_image_src
+                ];
+            }
+
+            // Set domain
+            if (empty($output['twitter']['domain'])) {
+                $output['twitter']['domain'] = [
+                    'property' => "twitter:domain",
+                    'content' => $this->request->getHttpHost()
+                ];
+            }
+        }
+
+        if (!$group || in_array($group, ['og', 'opengraph', 'all'])) {
+            // Open Graph
+            $output['og']['og:url'] = [
+                'property' => 'og:url',
+                'content' => $this->request->url()
+            ];
+            foreach ($this->og as $tag) {
+                // Get value for tag, default to dynamically set value
+                $value = Arr::get($this->config['open_graph'], $tag, $this->get($tag));
+                if (!empty($value)) {
+                    if ($tag == 'gallery' || is_array($value)) {
+                        foreach ($value as $glKey => $image) {
+                            foreach ($image as $key => $val) {
+                                $output['og']["$tag.$glKey.$key"] = [
+                                    'property' => "og:{$key}",
+                                    'content' => $val
+                                ];
+                            }
+                        }
+                    } else {
+                        $output['og']["og:{$tag}"] = [
+                            'property' => "og:{$tag}",
+                            'content' => $value
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $output;
     }
 
     /**

@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static \ZanySoft\LaravelMetaTags\MetaTag setImage(string $imageFile, array $attributes = null)
  * @method static \ZanySoft\LaravelMetaTags\MetaTag type(string $type)
  * @method static \ZanySoft\LaravelMetaTags\MetaTag setType(string $type)
+ * @method static \ZanySoft\LaravelMetaTags\MetaTag toArray(string $group = null)
+ * @method static \ZanySoft\LaravelMetaTags\MetaTag renderAll()
  */
 class MetaTag extends Facade
 {
