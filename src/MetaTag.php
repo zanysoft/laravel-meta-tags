@@ -109,6 +109,10 @@ class MetaTag
      */
     public function __construct(Request $request, array $config = [], $defaultLocale = 'en')
     {
+        if (Str::contains($defaultLocale, '_')) {
+            list($defaultLocale) = explode('_', $defaultLocale);
+        }
+
         $this->request = $request;
         $this->config = $config;
         $this->defaultLocale = $defaultLocale;
@@ -196,6 +200,10 @@ class MetaTag
         $this->config['locales'] = [];
 
         foreach ($locals as $local) {
+            if (Str::contains($local, '_')) {
+                list($local) = explode('_', $local);
+            }
+
             $this->setLocale($local);
         }
 
