@@ -2,7 +2,6 @@
   "name": "zanysoft/laravel-meta-tags",
   "description": "A package to manage Header Meta Tags",
   "license": "MIT",
-  "homepage": "http://www.zanysoft.net",
   "keywords": [
     "meta tags",
     "meta",
